@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="stand_padding">16dp</dimen>
+    <dimen name="stand_thickness">1dp</dimen>
+    <dimen name="small_padding">8dp</dimen>
+    <dimen name="stand_spacer">16dp</dimen>
+    <dimen name="small_spacer">8dp</dimen>
+    <dimen name="min_tab_height">380dp</dimen>
+</resources>

@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Filmy</string>
+    <string name="scenes">Scenes</string>
+    <string name="actors">Actors</string>
+    <string name="scene_desc">Scene from the movie</string>
+    <string name="poster_desc">Poster for the movie %s</string>
+</resources>
