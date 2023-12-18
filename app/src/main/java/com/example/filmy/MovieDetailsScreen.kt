@@ -116,7 +116,7 @@ fun MovieDetailScreen(movie:Movie) {
 
 @Composable
 fun VideoPlayer(videoUris: List<String>) {
-    var isPlaying by rememberSaveable { mutableStateOf(false) } //czy key w ogole trzeba
+    var isPlaying by rememberSaveable { mutableStateOf(false) }
     var currPosition by rememberSaveable { mutableLongStateOf(0.toLong()) }
     var currVideoIndex by rememberSaveable { mutableIntStateOf(0) }
     val context = LocalContext.current
