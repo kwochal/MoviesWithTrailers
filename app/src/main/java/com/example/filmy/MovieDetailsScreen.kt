@@ -1,33 +1,53 @@
 package com.example.filmy
 
+import android.view.View
+import android.widget.FrameLayout
+import android.widget.ImageButton
+import androidx.annotation.OptIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Tab
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Star
+
 import androidx.compose.material3.Divider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 
@@ -35,24 +55,35 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.compose.ui.window.Dialog
+import androidx.core.view.WindowCompat
+import androidx.media3.common.MediaItem
+import androidx.media3.common.util.UnstableApi
+import androidx.media3.common.util.Util
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.PlayerControlView
+import androidx.media3.ui.PlayerView
+
 import com.example.filmy.ui.theme.Purple40
 
-const val SELECTED_TAB_KEY = "selectedTabIndex"
-const val DIALOG_IMAGE_KEY = "zoomedImageIndex"
 
 @Composable
 fun MovieDetailScreen(movie:Movie) {
 
-    var selectedTabIndex by rememberSaveable(key = SELECTED_TAB_KEY) { mutableIntStateOf(0) }
-    var zoomedImageIndex by rememberSaveable(key= DIALOG_IMAGE_KEY) { mutableIntStateOf(-1) }
+    var selectedTabIndex by rememberSaveable{ mutableIntStateOf(0) }
+    var zoomedImageIndex by rememberSaveable{ mutableIntStateOf(-1) }
 
     Column(
         modifier = Modifier
@@ -64,8 +95,11 @@ fun MovieDetailScreen(movie:Movie) {
         Header(movie)
         PosterWithDescription(movie)
         Spacer(modifier = Modifier.height(dimensionResource(R.dimen.stand_spacer)))
+        Column(modifier = Modifier.align(Alignment.CenterHorizontally)){
+            VideoPlayer(movie.trailers)
+            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.stand_spacer)))
+        }
         DetailTabs(selectedTabIndex = selectedTabIndex, onClick = {index -> selectedTabIndex = index})
-
         when (selectedTabIndex) {
             0 -> ScenesTab(movie.scenes) { index -> zoomedImageIndex = index }
             1 -> ActorsTab(movie.actors)
@@ -76,6 +110,47 @@ fun MovieDetailScreen(movie:Movie) {
             })
         }
     }
+}
+
+
+
+@Composable
+fun VideoPlayer(videoUris: List<String>) {
+    var isPlaying by rememberSaveable { mutableStateOf(false) } //czy key w ogole trzeba
+    var currPosition by rememberSaveable { mutableLongStateOf(0.toLong()) }
+    var currVideoIndex by rememberSaveable { mutableIntStateOf(0) }
+    val context = LocalContext.current
+    val exoPlayer = remember {
+        ExoPlayer.Builder(context).build().apply {
+            videoUris.forEach { uri ->
+                addMediaItem(MediaItem.fromUri(uri))
+            }
+            prepare()
+            playWhenReady = isPlaying
+            seekTo(currVideoIndex,currPosition)
+        }
+    }
+
+    DisposableEffect(exoPlayer) {
+        onDispose {
+            isPlaying = exoPlayer.isPlaying
+            currPosition = exoPlayer.currentPosition
+            currVideoIndex = exoPlayer.currentMediaItemIndex
+            exoPlayer.release()
+        }
+    }
+
+    AndroidView(
+        factory = { context ->
+            PlayerView(context).apply {
+                player = exoPlayer
+            }
+        },
+        modifier = Modifier
+            .width(500.dp)
+            .height(250.dp)
+    )
+
 }
 
 @Composable

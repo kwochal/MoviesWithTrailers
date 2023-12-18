@@ -6,6 +6,7 @@ data class Movie(
     val imageResId: Int,
     val description: String,
     val scenes: List<Int>,
-    val actors: List<Pair<String,Int>>
+    val actors: List<Pair<String,Int>>,
+    val trailers : List<String> = emptyList()
 )
 
