@@ -113,11 +113,10 @@ fun MovieDetailScreen(movie:Movie) {
 }
 
 
-
 @Composable
 fun VideoPlayer(videoUris: List<String>) {
     var isPlaying by rememberSaveable { mutableStateOf(false) }
-    var currPosition by rememberSaveable { mutableLongStateOf(0.toLong()) }
+    var currPosition by rememberSaveable { mutableLongStateOf(0L) }
     var currVideoIndex by rememberSaveable { mutableIntStateOf(0) }
     val context = LocalContext.current
     val exoPlayer = remember {
